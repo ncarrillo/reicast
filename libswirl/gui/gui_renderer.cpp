@@ -38,7 +38,7 @@ static void findGLVersion()
     if (glGetError() == GL_INVALID_ENUM)
         gl.gl_major = 2;
     const char* version = (const char*)glGetString(GL_VERSION);
-    printf("OpenGL version: %s\n", version);
+    //printf("OpenGL version: %s\n", version);
     if (!strncmp(version, "OpenGL ES", 9))
     {
         gl.is_gles = true;
@@ -535,7 +535,7 @@ struct GUIRenderer_impl : GUIRenderer {
     }
 
     bool CreateContext() {
-        printf("CreateContext\n");
+        //printf("CreateContext\n");
         if (!os_gl_init((void*)libPvr_GetRenderTarget(),
                         (void*)libPvr_GetRenderSurface()))
             return false;
@@ -549,7 +549,7 @@ struct GUIRenderer_impl : GUIRenderer {
 
         CreateOSDResources();
         //rend_init_renderer(sh4_cpu->vram.data); // is lazy init in rend_frame, sh4_cpu might not be known at this point
-        printf("CreateContext Done\n");
+        //printf("CreateContext Done\n");
         return true;
     }
 

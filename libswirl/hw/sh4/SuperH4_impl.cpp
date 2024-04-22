@@ -141,7 +141,7 @@ void SuperH4_impl::Reset(bool Manual)
         UpdateFPSCR();
 
         //Any more registers have default value ?
-        printf("Sh4 Reset h3llo chichi\n");
+        //printf("Sh4 Reset h3llo chichi\n");
 
         //Clear cache
         sh4_backend->ClearCache();

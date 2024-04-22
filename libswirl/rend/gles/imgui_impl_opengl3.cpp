@@ -266,7 +266,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data, bool save_backgr
 
 bool ImGui_ImplOpenGL3_CreateFontsTexture()
 {
-    printf("CreateFontsTexture\n");
+    //printf("CreateFontsTexture\n");
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;

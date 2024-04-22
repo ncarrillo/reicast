@@ -307,7 +307,7 @@ struct ReicastUI_impl : GUI {
         // don't use scaling for this one to avoid too big textures
 
         font64 = io.Fonts->AddFontFromMemoryCompressedTTF(roboto_medium_compressed_data, roboto_medium_compressed_size, 96);
-        printf("Screen DPI is %d, size %d x %d. Scaling by %.2f\n", screen_dpi, screen_width, screen_height, scaling);
+        //printf("Screen DPI is %d, size %d x %d. Scaling by %.2f\n", screen_dpi, screen_width, screen_height, scaling);
     }
 
     void OpenSettings(function<void()> cb)

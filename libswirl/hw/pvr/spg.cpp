@@ -223,7 +223,7 @@ struct SPG_impl final : SPG {
                         , mv, mv_c, mips_counter / 1024.0 / 1024.0);
                     mips_counter = 0;
 
-                    os_SetWindowText(temp);
+                    //os_SetWindowText(temp);
 
                     fskip = 0;
                     last_fps = os_GetSeconds();

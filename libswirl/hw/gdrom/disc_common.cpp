@@ -67,7 +67,7 @@ static bool DiscInit_(wchar* fn)
 				"Please only file bug reports when using images known to be good (GDI, CUE or CHD).";
 			printf("%s\n", warn_str);
 		}
-		printf("gdrom: Opened image \"%s\"\n",fn);
+		//printf("gdrom: Opened image \"%s\"\n",fn);
 		NullDriveDiscType=Busy;
 
 		libCore_gdrom_disc_change();
@@ -77,7 +77,7 @@ static bool DiscInit_(wchar* fn)
 	}
 	else
 	{
-		printf("gdrom: Failed to open image \"%s\"\n",fn);
+		//printf("gdrom: Failed to open image \"%s\"\n",fn);
 		NullDriveDiscType=NoDisk; //no disc :)
 	}
 	return false;

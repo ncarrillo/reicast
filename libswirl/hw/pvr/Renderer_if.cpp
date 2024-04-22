@@ -126,7 +126,7 @@ static void rend_create_renderer(u8* vram)
 {
     if (backends.count(settings.pvr.backend))
     {
-        printf("RendIF: renderer: %s\n", settings.pvr.backend.c_str());
+        //printf("RendIF: renderer: %s\n", settings.pvr.backend.c_str());
         renderer.reset(backends[settings.pvr.backend].create(vram));
         renderer->backendInfo = backends[settings.pvr.backend];
     }
@@ -146,11 +146,11 @@ static void rend_create_renderer(u8* vram)
             fallback_renderer->backendInfo = fallback;
         }
 
-        printf("RendIF: renderer (auto): ");
-        printf("main: %s", (vec.begin())->slug.c_str());
-        if (fallback_renderer)
-            printf(" fallback: %s", (++vec.begin())->slug.c_str());
-        printf("\n");
+        //printf("RendIF: renderer (auto): ");
+        //printf("main: %s", (vec.begin())->slug.c_str());
+        //if (fallback_renderer)
+            //printf(" fallback: %s", (++vec.begin())->slug.c_str());
+        //printf("\n");
     }
 }
 
@@ -161,10 +161,10 @@ void rend_init_renderer(u8* vram)
 
     if (!renderer->Init())
     {
-        printf("RendIF: Renderer %s did not initialize. Falling back to %s.\n",
-            renderer->backendInfo.slug.c_str(),
-            fallback_renderer->backendInfo.slug.c_str()
-        );
+        //printf("RendIF: Renderer %s did not initialize. Falling back to %s.\n",
+            //renderer->backendInfo.slug.c_str(),
+            //fallback_renderer->backendInfo.slug.c_str()
+        //);
 
         renderer = std::move(fallback_renderer);
 
@@ -175,7 +175,7 @@ void rend_init_renderer(u8* vram)
         }
     }
 
-	printf("RendIF: Using renderer: %s\n", renderer->backendInfo.slug.c_str());
+	//printf("RendIF: Using renderer: %s\n", renderer->backendInfo.slug.c_str());
 }
 
 void rend_term_renderer()

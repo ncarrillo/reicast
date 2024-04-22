@@ -186,6 +186,6 @@ bool ParseCommandLine(int argc,wchar* argv[])
 		arg++;
 		cl--;
 	}
-	printf("\n");
+	//printf("\n");
 	return false;
 }

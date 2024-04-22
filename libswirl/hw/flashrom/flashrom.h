@@ -107,7 +107,7 @@ struct MemChip
 
 			if (Load(temp))
 			{
-				printf("Loaded %s as %s\n\n",temp,title.c_str());
+				//printf("Loaded %s as %s\n\n",temp,title.c_str());
 				return true;
 			}
 		} while(next);

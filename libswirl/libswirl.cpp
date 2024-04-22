@@ -148,7 +148,7 @@ void plugins_Reset(bool Manual)
 void LoadSpecialSettings()
 {
 #if DC_PLATFORM == DC_PLATFORM_DREAMCAST
-    printf("Game ID is [%s]\n", reios_product_number);
+    //printf("Game ID is [%s]\n", reios_product_number);
     rtt_to_buffer_game = false;
     safemode_game = false;
     tr_poly_depth_mask_game = false;
@@ -208,7 +208,7 @@ void LoadSpecialSettings()
         extra_depth_game = true;
     }
 #elif DC_PLATFORM == DC_PLATFORM_NAOMI || DC_PLATFORM == DC_PLATFORM_ATOMISWAVE
-    printf("Game ID is [%s]\n", naomi_game_id);
+    //printf("Game ID is [%s]\n", naomi_game_id);
 
     if (!strcmp("METAL SLUG 6", naomi_game_id) || !strcmp("WAVE RUNNER GP", naomi_game_id))
     {
@@ -637,8 +637,8 @@ int reicast_init(int argc, char* argv[])
     {
         return 69;
     }
-    printf("Config dir is: %s\n", get_writable_config_path("/").c_str());
-	printf("Data dir is:   %s\n", get_writable_data_path("/").c_str());
+    //printf("Config dir is: %s\n", get_writable_config_path("/").c_str());
+	//printf("Data dir is:   %s\n", get_writable_data_path("/").c_str());
 
     InitSettings();
     bool showOnboarding = false;
@@ -718,36 +718,36 @@ struct Dreamcast_impl : VirtualDreamcast {
 
         if (settings.dynarec.Enable && sh4_cpu->setBackend(SH4BE_DYNAREC))
         {
-            printf("Using MCPU Recompiler\n");
+            //printf("Using MCPU Recompiler\n");
         }
         else
         {
             sh4_cpu->setBackend(SH4BE_INTERPRETER);
-            printf("Using MCPU Interpreter\n");
+            //printf("Using MCPU Interpreter\n");
         }
 
         auto scpu = sh4_cpu->GetA0H<SoundCPU>(A0H_SCPU);
 
         if (settings.dynarec.ScpuEnable && scpu->setBackend(ARM7BE_DYNAREC))
         {
-            printf("Using SCPU Recompiler\n");
+            //printf("Using SCPU Recompiler\n");
         }
         else
         {
             scpu->setBackend(ARM7BE_INTERPRETER);
-            printf("Using SCPU Interpreter\n");
+            //printf("Using SCPU Interpreter\n");
         }
 
         auto dsp = sh4_cpu->GetA0H<DSP>(A0H_DSP);
 
         if (settings.dynarec.DspEnable && dsp->setBackend(DSPBE_DYNAREC))
         {
-            printf("Using DSP Recompiler\n");
+            //printf("Using DSP Recompiler\n");
         }
         else
         {
             dsp->setBackend(DSPBE_INTERPRETER);
-            printf("Using DSP Interpreter\n");
+            //printf("Using DSP Interpreter\n");
         }
 
         sh4_cpu->Start();

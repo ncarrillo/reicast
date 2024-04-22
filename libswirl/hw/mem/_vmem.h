@@ -205,22 +205,62 @@ void DYNACALL Write##name(void* ctx, u32 addr, T data) { \
 	auto that = reinterpret_cast<SuperH4Mmr_impl*>(ctx); \
 	that->Write##name<sz, T>(addr, data); \
 }
-
+#define TRACEMEM
 //ReadMem/WriteMem functions
 //ReadMem
 INLINE u32 DYNACALL _vmem_ReadMem8SX32(u32 Address) { return _vmem_readt<s8, s32>(Address); }
 INLINE u32 DYNACALL _vmem_ReadMem16SX32(u32 Address) { return _vmem_readt<s16, s32>(Address); }
 
-INLINE u8 DYNACALL _vmem_ReadMem8(u32 Address) { return _vmem_readt<u8, u8>(Address); }
-INLINE u16 DYNACALL _vmem_ReadMem16(u32 Address) { return _vmem_readt<u16, u16>(Address); }
-INLINE u32 DYNACALL _vmem_ReadMem32(u32 Address) { return _vmem_readt<u32, u32>(Address); }
-INLINE u64 DYNACALL _vmem_ReadMem64(u32 Address) { return _vmem_readt<u64, u64>(Address); }
+INLINE u8 DYNACALL _vmem_ReadMem8(u32 Address) {
+    u8 drv = _vmem_readt<u8, u8>(Address);
+#ifdef TRACEMEM
+    printf("\n read8    (%08x) %02x", Address, (u32)drv);
+#endif
+
+    return drv; }
+INLINE u16 DYNACALL _vmem_ReadMem16(u32 Address) { u16 drr = _vmem_readt<u16, u16>(Address);
+#ifdef TRACEMEM
+    printf("\n read16   (%08x) %04x", Address, (u32)drr);
+#endif
+return drr; }
+
+INLINE u16 DYNACALL _vmem_IReadMem16(u32 Address) {
+    return _vmem_readt<u16, u16>(Address);
+}
+INLINE u32 DYNACALL _vmem_ReadMem32(u32 Address) { u32 rvv = _vmem_readt<u32, u32>(Address);
+#ifdef TRACEMEM
+    printf("\n read32   (%08x) %08x", Address, rvv);
+#endif
+    return rvv;
+}
+INLINE u64 DYNACALL _vmem_ReadMem64(u32 Address) { u64 rrd = _vmem_readt<u64, u64>(Address);
+#ifdef TRACEMEM
+    printf("\n read64   (%08x) %016llx", Address, rrd);
+#endif
+    return rrd;
+}
 
 //WriteMem
-INLINE void DYNACALL _vmem_WriteMem8(u32 Address, u8 data) { _vmem_writet<u8>(Address, data); }
-INLINE void DYNACALL _vmem_WriteMem16(u32 Address, u16 data) { _vmem_writet<u16>(Address, data); }
-INLINE void DYNACALL _vmem_WriteMem32(u32 Address, u32 data) { _vmem_writet<u32>(Address, data); }
-INLINE void DYNACALL _vmem_WriteMem64(u32 Address, u64 data) { _vmem_writet<u64>(Address, data); }
+INLINE void DYNACALL _vmem_WriteMem8(u32 Address, u8 data) {
+#ifdef TRACEMEM
+    printf("\n write8   (%08x) %02x", Address, (u32)data);
+#endif
+    _vmem_writet<u8>(Address, data); }
+INLINE void DYNACALL _vmem_WriteMem16(u32 Address, u16 data) {
+#ifdef TRACEMEM
+    printf("\n write16  (%08x) %04x", Address, (u32)data);
+#endif
+    _vmem_writet<u16>(Address, data);}
+INLINE void DYNACALL _vmem_WriteMem32(u32 Address, u32 data) {
+#ifdef TRACEMEM
+    printf("\n write32  (%08x) %08x", Address, data);
+#endif
+    _vmem_writet<u32>(Address, data); }
+INLINE void DYNACALL _vmem_WriteMem64(u32 Address, u64 data) {
+#ifdef TRACEMEM
+    printf("\n write64  (%08x) %016llx", Address, data);
+#endif
+    _vmem_writet<u64>(Address, data); }
 
 //should be called at start up to ensure it will succeed :)
 bool _vmem_reserve(VLockedMemory* mram, VLockedMemory* vram, VLockedMemory* aica_ram, u32 aram_size);

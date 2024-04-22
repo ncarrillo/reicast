@@ -91,7 +91,7 @@ bool CHDDisc::TryOpen(const wchar* file)
 
 	if (err!=CHDERR_NONE)
 	{
-		printf("chd: chd_open failed for file %s: %d\n", file, err);
+		//printf("chd: chd_open failed for file %s: %d\n", file, err);
 		return false;
 	}
 

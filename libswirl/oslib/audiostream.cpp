@@ -247,7 +247,7 @@ audiobackend_t* GetAudioBackend(std::string slug)
 		#if BUILD_RETROARCH_CORE==1
 			audiobackend_t* rv = SearchAudioBackend("libretro");
 			if (rv != nullptr) {
-				printf("Auto-selected audio backend \"%s\" (%s).\n", rv->slug.c_str(), rv->name.c_str());
+				//printf("Auto-selected audio backend \"%s\" (%s).\n", rv->slug.c_str(), rv->name.c_str());
 				return rv;
 			}
 		#endif
@@ -256,7 +256,7 @@ audiobackend_t* GetAudioBackend(std::string slug)
 			/* FIXME: At some point, one might want to insert some intelligent
 				 algorithm for autoselecting the approriate audio backend here.
 				 I'm too lazy right now. */
-			printf("Auto-selected audio backend \"%s\" (%s).\n", audiobackends[0]->slug.c_str(), audiobackends[0]->name.c_str());
+			//printf("Auto-selected audio backend \"%s\" (%s).\n", audiobackends[0]->slug.c_str(), audiobackends[0]->name.c_str());
 			return audiobackends[0];
 		}
 		else
@@ -362,7 +362,7 @@ struct AudioStream_impl : AudioStream {
 			return;
 		}
 
-		printf("Initializing audio backend \"%s\" (%s)...\n", audiobackend_current->slug.c_str(), audiobackend_current->name.c_str());
+		//printf("Initializing audio backend \"%s\" (%s)...\n", audiobackend_current->slug.c_str(), audiobackend_current->name.c_str());
 		
 		audiobackend_current->init([=](void* buffer, u32 buffer_size, u32 amt, u32 target_rate) {
 			return this->PullAudioCallback(buffer, buffer_size, amt, target_rate); 

@@ -40,7 +40,7 @@ struct SH4IInterpreter : SuperH4Backend {
     static s32 l;
     static bool tracing;
     static s64 tracesLeft;
-    static u64 totalsCounted;
+    static s64 til_traces;
 
     ~SH4IInterpreter() { Term(); }
     void Loop() {
@@ -55,17 +55,17 @@ struct SH4IInterpreter : SuperH4Backend {
                     next_pc += 2;
                     u32 op = IReadMem16(addr);
 
-                    //if (addr == 0xa0000000) {
-                    if (addr == 0x8c09b770) {
+                    if (addr == 0xa0000000) {
                         if (!tracing) {
+                            SH4IInterpreter::til_traces = 10000000;
                             SH4IInterpreter::tracing = true;
-                            SH4IInterpreter::tracesLeft = 100000;
+                            SH4IInterpreter::tracesLeft = 10000000;
                         }
                     }
 
                     if (SH4IInterpreter::tracing && SH4IInterpreter::tracesLeft > 0) {
                         // pc
-                        printf("%08x %04x ", addr, ((u16)op & 0xFFFF));
+                        printf("\n%08x %04x ", addr, ((u16)op & 0xFFFF));
 
                         // r0-r15
                         for (int i = 0; i < 16; ++i) {
@@ -76,15 +76,13 @@ struct SH4IInterpreter : SuperH4Backend {
                         printf("%08x", sr.status | sr.T);
                         printf(" %08x", fpscr.full);
 
-                        printf("\n");
                         tracesLeft--;
 
                         if (tracesLeft == 0) {
                             fflush(stdout);
                         }
                     }
-                    
-                    SH4IInterpreter::totalsCounted += 1;
+
                     ExecuteOpcode(op);
                     l -= CPU_RATIO;
                 } while (l > 0);
@@ -114,7 +112,6 @@ struct SH4IInterpreter : SuperH4Backend {
 s32 SH4IInterpreter::l = 0;
 bool SH4IInterpreter::tracing = false;
 s64 SH4IInterpreter::tracesLeft = 0;
-u64 SH4IInterpreter::totalsCounted = 0;
 
 SuperH4Backend* Get_Sh4Interpreter()
 {
@@ -132,7 +129,7 @@ void ExecuteDelayslot()
 
         if (SH4IInterpreter::tracing && SH4IInterpreter::tracesLeft > 0) {
             // Output next_pc
-            printf("%08x %04x ", addr, ((u16)op & 0xFFFF));
+            printf("\n%08x %04x ", addr, ((u16)op & 0xFFFF));
 
             // Output registers r0 to r15
             for (int i = 0; i < 16; ++i) {
@@ -141,11 +138,9 @@ void ExecuteDelayslot()
 
             printf("%08x", sr.status | sr.T);
             printf(" %08x", fpscr.full);
-            printf("\n");
             SH4IInterpreter::tracesLeft--;
         }
 
-        SH4IInterpreter::totalsCounted += 1;
         if (op != 0)
             ExecuteOpcode(op);
 #if !defined(NO_MMU)

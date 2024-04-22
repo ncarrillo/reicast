@@ -504,24 +504,12 @@ struct GDRomV3_impl final : MMIODevice {
 
         case SPI_GET_TOC:
         {
-            printf("SPI_GET_TOC\n");
-            printf("%02x\n", packet_cmd.data_8[1] & 0x1);
-
-            fflush(stdout);
+            printf_spicmd("SPI_GET_TOC\n");
             //printf("SPI_GET_TOC - %d\n",(packet_cmd.data_8[4]) | (packet_cmd.data_8[3]<<8) );
             u32 toc_gd[102];
 
-
             //toc - dd/sd
             g_GDRDisc->GetToc(&toc_gd[0], packet_cmd.data_8[1] & 0x1);
-
-            for (int i = 0; i < 102; i++) {
-                printf("0x%08X\n",
-                    toc_gd[i]
-                );
-
-                fflush(stdout);
-            }
 
             gd_spi_pio_end((u8*)&toc_gd[0], (packet_cmd.data_8[4]) | (packet_cmd.data_8[3] << 8));
         }
@@ -1227,7 +1215,7 @@ struct GDRomV3_impl final : MMIODevice {
     {
         if (SB_GDEN == 0)
         {
-            printf("Invalid GD-DMA start, SB_GDEN=0.Ingoring it.\n");
+            //printf("Invalid GD-DMA start, SB_GDEN=0.Ingoring it.\n");
             return;
         }
         SB_GDST |= data & 1;
