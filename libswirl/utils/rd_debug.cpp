@@ -80,7 +80,7 @@ void rdbg_flush()
 {
     if (!dbg.trace_on) return;
     if (dbg.first_flush) {
-        construct_path(fpath, "sh4.log");
+        construct_path(fpath, "dev/reicast.log");
         dbg.first_flush = 0;
         remove(fpath);
     }

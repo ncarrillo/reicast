@@ -56,9 +56,10 @@ struct SH4IInterpreter : SuperH4Backend {
                     next_pc += 2;
                     u32 op = IReadMem16(addr);
 
-                    if (addr == 0xa0000000) {
-                        if (!tracing) {
-                            SH4IInterpreter::til_traces = 10000000;
+                    if (!tracing) {
+                        if (SH4IInterpreter::til_traces <= 0) {
+                            printf("\nENABLING TRACE! %llu %08x %d", dbg.trace_cycles, addr, tracing);
+                            SH4IInterpreter::til_traces = 0;
                             SH4IInterpreter::tracing = true;
                             rdbg_enable_trace();
                             SH4IInterpreter::tracesLeft = 10000000;
@@ -80,10 +81,11 @@ struct SH4IInterpreter : SuperH4Backend {
                         tracesLeft--;
 
                         if (tracesLeft == 0) {
-                            rdbg_disable_trace();
                             rdbg_flush();
+                            rdbg_disable_trace();
                         }
                     }
+                    til_traces--;
 
                     ExecuteOpcode(op);
                     rdbg_cycle();
@@ -112,7 +114,7 @@ struct SH4IInterpreter : SuperH4Backend {
     void ClearCache() { }
 };
 
-s64 SH4IInterpreter::til_traces = 0;
+s64 SH4IInterpreter::til_traces = 10000000;
 s32 SH4IInterpreter::l = 0;
 bool SH4IInterpreter::tracing = false;
 s64 SH4IInterpreter::tracesLeft = 0;
@@ -143,11 +145,18 @@ void ExecuteDelayslot()
             rdbg_printf("%08x", sr.status | sr.T);
             rdbg_printf(" %08x", fpscr.full);
             SH4IInterpreter::tracesLeft--;
+
+            if (SH4IInterpreter::tracesLeft == 0) {
+                rdbg_disable_trace();
+                rdbg_flush();
+            }
         }
 
-        if (op != 0)
+        if (op != 0) {
+            SH4IInterpreter::til_traces--;
             rdbg_cycle();
             ExecuteOpcode(op);
+        }
 #if !defined(NO_MMU)
     }
     catch (SH4ThrownException& ex) {
