@@ -50,7 +50,7 @@ void ExecuteOpcode(u16 op);
 void ExecuteDelayslot();
 void ExecuteDelayslot_RTE();
 
-#define SH4_TIMESLICE (448)	// at 112 Bangai-O doesn't start. 224 is ok
+#define SH4_TIMESLICE (4)	// at 112 Bangai-O doesn't start. 224 is ok
 							// at 448 Gundam Side Story hangs on Sega copyright screen, 224 ok, 672 ok(!)
 
 extern "C" {
@@ -58,5 +58,21 @@ extern "C" {
 int UpdateSystem();
 
 ATTR_USED int UpdateSystem_INTC();
+
+struct SH4IInterpreter : SuperH4Backend {
+    static s32 l;
+    static bool tracing;
+    static s64 tracesLeft;
+    static s64 til_traces;
+
+    static s32 cycles_left;
+    static u32 trace_cycles;
+
+    ~SH4IInterpreter() override;
+    bool Init() override;
+    void ClearCache() override;
+
+    void Loop() override;
+};
 
 }

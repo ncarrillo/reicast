@@ -98,6 +98,9 @@ set(core_SRCS
   ${d_core}/stdclass.cpp
   ${d_core}/dispframe.cpp
   ${d_core}/serialize.cpp
+        libswirl/hw/testgen/sh4_test_generator.cpp
+        libswirl/hw/testgen/cvec.cpp
+        libswirl/hw/testgen/myrandom.cpp
 )
 
 if(${BUILD_COMPILER} EQUAL ${COMPILER_GCC} OR (${BUILD_COMPILER} EQUAL ${COMPILER_CLANG} AND ${HOST_OS} EQUAL ${OS_DARWIN})) # TODO: Test with Clang on other platforms
@@ -279,7 +282,9 @@ endif()
 
 include_directories ("${reicast_core_path}")
 
-set(reicast_SRCS ${core_SRCS} ${deps_SRCS} ${osd_SRCS})
+set(reicast_SRCS ${core_SRCS} ${deps_SRCS} ${osd_SRCS}
+        libswirl/utils/rd_debug.cpp
+        libswirl/utils/rd_debug.h)
 
 if (LIBRETRO_CORE)
 

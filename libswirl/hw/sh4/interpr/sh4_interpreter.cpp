@@ -8,13 +8,7 @@
 #include "utils/rd_debug.h"
 
 // Function prototypes
-void ExecuteOpcode(u16 op);
-void ExecuteDelayslot();
-void ExecuteDelayslot_RTE();
-SuperH4Backend* Get_Sh4Interpreter();
-
-#define CPU_RATIO (8)
-
+#define CPU_RATIO (1)
 void ExecuteOpcode(u16 op)
 {
     if (sr.FD == 1 && OpDesc[op]->IsFloatingPoint())
@@ -36,88 +30,61 @@ void ExecuteDelayslot_RTE()
 #endif
 }
 
+#include "../sh4_interpreter.h"
+
+SH4IInterpreter::~SH4IInterpreter() {
+    //Term();
+}
+u32 test_fetch_ins(u32 addr);
+u64 test_read(u32 addr, u32 sz);
+void test_write(u32 addr, u64 val, u32 sz);
+
+void SH4IInterpreter::Loop() {
+
 // Definition of SH4IInterpreter
-struct SH4IInterpreter : SuperH4Backend {
-    static s32 l;
-    static bool tracing;
-    static s64 tracesLeft;
-    static s64 til_traces;
+    l = SH4_TIMESLICE;
+    SH4IInterpreter::cycles_left = 4;
 
-    ~SH4IInterpreter() { Term(); }
-    void Loop() {
-        l = SH4_TIMESLICE;
-
-        do {
 #if !defined(NO_MMU)
-            try {
+    try {
 #endif
-                do {
-                    u32 addr = next_pc;
-                    next_pc += 2;
-                    u32 op = IReadMem16(addr);
+    do {
+        u32 addr = next_pc;
+        next_pc += 2;
+        u32 op = IReadMem16(addr);
 
-                    if (!tracing) {
-                        if (SH4IInterpreter::til_traces <= 0) {
-                            printf("\nENABLING TRACE! %llu %08x %d", dbg.trace_cycles, addr, tracing);
-                            SH4IInterpreter::til_traces = 0;
-                            SH4IInterpreter::tracing = true;
-                            rdbg_enable_trace();
-                            SH4IInterpreter::tracesLeft = 10000000;
-                        }
-                    }
+        SH4IInterpreter::cycles_left--;
+        SH4IInterpreter::trace_cycles++;
+        ExecuteOpcode(op);
+        //rdbg_cycle();
+        l -= 1;
+    } while (SH4IInterpreter::cycles_left > 0);
 
-                    if (SH4IInterpreter::tracing && SH4IInterpreter::tracesLeft > 0) {
-                        // pc
-                        rdbg_printf("\n%08x %04x ", addr, ((u16)op & 0xFFFF));
+    l += SH4_TIMESLICE;
 
-                        // r0-r15
-                        for (int i = 0; i < 16; ++i) {
-                            rdbg_printf("%08x ", r[i]);
-                        }
-
-                        // sr
-                        rdbg_printf("%08x %08x", sr.status | sr.T, fpscr.full);
-
-                        tracesLeft--;
-
-                        if (tracesLeft == 0) {
-                            rdbg_flush();
-                            rdbg_disable_trace();
-                        }
-                    }
-                    til_traces--;
-
-                    ExecuteOpcode(op);
-                    rdbg_cycle();
-                    l -= CPU_RATIO;
-                } while (l > 0);
-
-                l += SH4_TIMESLICE;
-
-                if (UpdateSystem()) {
-                    UpdateINTC();
-                    if (!sh4_int_bCpuRun)
-                        break;
-                }
-#if !defined(NO_MMU)
-            }
-            catch (SH4ThrownException& ex) {
-                Do_Exception(ex.epc, ex.expEvn, ex.callVect);
-                l -= CPU_RATIO * 5;
-            }
-#endif
-        } while (true);
+    if (UpdateSystem()) {
+        UpdateINTC();
     }
+#if !defined(NO_MMU)
+    }
+    catch (SH4ThrownException& ex) {
+        Do_Exception(ex.epc, ex.expEvn, ex.callVect);
+        l -= CPU_RATIO * 5;
+    }
+#endif
+}
 
-    bool Init() { rdbg_init(); return true; }
-    void Term() { }
-    void ClearCache() { }
-};
+bool SH4IInterpreter::Init() { rdbg_init(); return true; }
+void SH4IInterpreter::ClearCache() {
 
-s64 SH4IInterpreter::til_traces = 10000000;
+}
+
+s64 SH4IInterpreter::til_traces = 0;
 s32 SH4IInterpreter::l = 0;
 bool SH4IInterpreter::tracing = false;
 s64 SH4IInterpreter::tracesLeft = 0;
+s32 SH4IInterpreter::cycles_left = 0;
+u32 SH4IInterpreter::trace_cycles = 0;
 
 SuperH4Backend* Get_Sh4Interpreter()
 {
@@ -145,18 +112,13 @@ void ExecuteDelayslot()
             rdbg_printf("%08x", sr.status | sr.T);
             rdbg_printf(" %08x", fpscr.full);
             SH4IInterpreter::tracesLeft--;
-
-            if (SH4IInterpreter::tracesLeft == 0) {
-                rdbg_disable_trace();
-                rdbg_flush();
-            }
         }
 
-        if (op != 0) {
-            SH4IInterpreter::til_traces--;
+        if (op != 0)
             rdbg_cycle();
             ExecuteOpcode(op);
-        }
+            SH4IInterpreter::cycles_left--;
+            SH4IInterpreter::trace_cycles++;
 #if !defined(NO_MMU)
     }
     catch (SH4ThrownException& ex) {

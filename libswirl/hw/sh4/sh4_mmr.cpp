@@ -149,6 +149,7 @@ struct SuperH4Mmr_impl final : SuperH4Mmr
 	template <u32 sz, class T>
 	T ReadMem_P4(u32 addr)
 	{
+
 		/*if (((addr>>26)&0x7)==7)
 		{
 		return ReadMem_area7(addr,sz);

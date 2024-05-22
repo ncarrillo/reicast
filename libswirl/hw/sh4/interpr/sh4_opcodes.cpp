@@ -994,7 +994,7 @@ sh4op(i1100_0011_iiii_iiii)
 
 	//printf("trapa 0x%X\n",(GetImm8(op) << 2));
 	CCN_TRA = (GetImm8(op) << 2);
-	Do_Exception(next_pc,0x160,0x100);
+	//Full MMU support needed(next_pc,0x160,0x100);
 }
 
 //jmp @<REG_N>
@@ -1185,14 +1185,14 @@ sh4op(i0000_0000_0000_1001)
 //ldtlb
 sh4op(i0000_0000_0011_1000)
 {
-	auto sh4mmr = sh4_cpu->sh4mmr.get();
+	/*auto sh4mmr = sh4_cpu->sh4mmr.get();
 
 	//printf("ldtlb %d/%d\n",CCN_MMUCR.URC,CCN_MMUCR.URB);
 	UTLB[CCN_MMUCR.URC].Data=CCN_PTEL;
 	UTLB[CCN_MMUCR.URC].Address=CCN_PTEH;
-	UTLB[CCN_MMUCR.URC].Assistance=CCN_PTEA;
+	UTLB[CCN_MMUCR.URC].Assistance=CCN_PTEA;*/
 
-	UTLB_Sync(CCN_MMUCR.URC);
+	//UTLB_Sync(CCN_MMUCR.URC);
 }
 
 //ocbi @<REG_N>

@@ -30,7 +30,7 @@ struct jsm_debug_read_trace {
     u32 (*read_trace)(void *,u32);
 };
 
-extern struct jsm_debug_struct dbg;
+extern
 
 void jsm_string_init(struct jsm_string *str, u32 size);
 void jsm_string_sprintf(struct jsm_string *str, const char* format, ...);

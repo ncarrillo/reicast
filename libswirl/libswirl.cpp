@@ -10,6 +10,7 @@
 //initialse Emu
 #include "types.h"
 #include "libswirl.h"
+#include "libswirl/hw/testgen/sh4_test_generator.h"
 #include "oslib/oslib.h"
 #include "oslib/audiostream.h"
 #include "hw/mem/_vmem.h"
@@ -668,10 +669,6 @@ int reicast_init(int argc, char* argv[])
     return 0;
 }
 
-void reicast_ui_loop() {
-    g_GUIRenderer->UILoop();
-}
-
 void reicast_term() {
     g_GUIRenderer.reset();
 
@@ -1217,3 +1214,21 @@ struct Dreamcast_impl : VirtualDreamcast {
 VirtualDreamcast* VirtualDreamcast::Create() {
     return new Dreamcast_impl();
 }
+
+void reicast_ui_loop() {
+
+    //printf("\nDO IT HERE!");
+    static bool generated = false;
+    if (!generated) {
+        generated = true;
+        Dreamcast_impl *f = new Dreamcast_impl();
+        f->Init();
+        generate_sh4_tests();
+        printf("\nDONE GENERATING!");
+    }
+    else {
+        printf("\nQUIT IT!");
+    }
+    //g_GUIRenderer->UILoop();
+}
+

@@ -31,6 +31,7 @@ void rdbg_init()
 
 void rdbg_printf(const char *format, ...)
 {
+    return;
     if (!dbg.trace_on) return;
     struct jsm_string*self = &dbg.msg;
     // do jsm_sprintf, basically, minus one line
@@ -80,7 +81,7 @@ void rdbg_flush()
 {
     if (!dbg.trace_on) return;
     if (dbg.first_flush) {
-        construct_path(fpath, "dev/reicast.log");
+        construct_path(fpath, "sh4.log");
         dbg.first_flush = 0;
         remove(fpath);
     }

@@ -211,56 +211,45 @@ void DYNACALL Write##name(void* ctx, u32 addr, T data) { \
 INLINE u32 DYNACALL _vmem_ReadMem8SX32(u32 Address) { return _vmem_readt<s8, s32>(Address); }
 INLINE u32 DYNACALL _vmem_ReadMem16SX32(u32 Address) { return _vmem_readt<s16, s32>(Address); }
 
+u32 test_fetch_ins(u32 addr);
+u64 test_read(u32 addr, u32 sz);
+void test_write(u32 addr, u64 val, u32 sz);
+
 INLINE u8 DYNACALL _vmem_ReadMem8(u32 Address) {
-    u8 drv = _vmem_readt<u8, u8>(Address);
-#ifdef TRACEMEM
-    rdbg_printf("\n read8    (%08x) %02x", Address, (u32)drv);
-#endif
+    u8 drv = test_read(Address, 1);
 
     return drv; }
-INLINE u16 DYNACALL _vmem_ReadMem16(u32 Address) { u16 drr = _vmem_readt<u16, u16>(Address);
-#ifdef TRACEMEM
-    rdbg_printf("\n read16   (%08x) %04x", Address, (u32)drr);
-#endif
+INLINE u16 DYNACALL _vmem_ReadMem16(u32 Address) {
+    u16 drr = test_read(Address, 2);
 return drr; }
 
 INLINE u16 DYNACALL _vmem_IReadMem16(u32 Address) {
-    return _vmem_readt<u16, u16>(Address);
+    return test_fetch_ins(Address);
 }
-INLINE u32 DYNACALL _vmem_ReadMem32(u32 Address) { u32 rvv = _vmem_readt<u32, u32>(Address);
-#ifdef TRACEMEM
-    rdbg_printf("\n read32   (%08x) %08x", Address, rvv);
-#endif
+INLINE u32 DYNACALL _vmem_ReadMem32(u32 Address) {
+    u32 rvv = test_read(Address, 4);
     return rvv;
 }
-INLINE u64 DYNACALL _vmem_ReadMem64(u32 Address) { u64 rrd = _vmem_readt<u64, u64>(Address);
-#ifdef TRACEMEM
-    rdbg_printf("\n read64   (%08x) %016llx", Address, rrd);
-#endif
+INLINE u64 DYNACALL _vmem_ReadMem64(u32 Address) {
+    u64 rrd = test_read(Address, 8);
     return rrd;
 }
 
 //WriteMem
 INLINE void DYNACALL _vmem_WriteMem8(u32 Address, u8 data) {
-#ifdef TRACEMEM
-    rdbg_printf("\n write8   (%08x) %02x", Address, (u32)data);
-#endif
-    _vmem_writet<u8>(Address, data); }
+
+    test_write(Address, data, 1);
+}
+
 INLINE void DYNACALL _vmem_WriteMem16(u32 Address, u16 data) {
-#ifdef TRACEMEM
-    rdbg_printf("\n write16  (%08x) %04x", Address, (u32)data);
-#endif
-    _vmem_writet<u16>(Address, data);}
+    test_write(Address, data, 2);
+}
 INLINE void DYNACALL _vmem_WriteMem32(u32 Address, u32 data) {
-#ifdef TRACEMEM
-    rdbg_printf("\n write32  (%08x) %08x", Address, data);
-#endif
-    _vmem_writet<u32>(Address, data); }
+    test_write(Address, data, 4);
+}
 INLINE void DYNACALL _vmem_WriteMem64(u32 Address, u64 data) {
-#ifdef TRACEMEM
-    rdbg_printf("\n write64  (%08x) %016llx", Address, data);
-#endif
-    _vmem_writet<u64>(Address, data); }
+    test_write(Address, data, 8);
+}
 
 //should be called at start up to ensure it will succeed :)
 bool _vmem_reserve(VLockedMemory* mram, VLockedMemory* vram, VLockedMemory* aica_ram, u32 aram_size);

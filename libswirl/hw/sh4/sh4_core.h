@@ -124,7 +124,7 @@ static INLINE void RaiseFPUDisableException()
 		throw ex;
 	}
 #else
-	msgboxf("Full MMU support needed", MBX_ICONERROR);
+	//msgboxf("Full MMU support needed", MBX_ICONERROR);
 #endif
 }
 
