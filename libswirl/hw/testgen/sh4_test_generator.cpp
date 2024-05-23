@@ -72,6 +72,7 @@ struct SH4_test_state {
     u32 MACH;
     u32 PR;
     u32 FPSCR;
+    u32 FPUL;
 
     u32 R[16]; // "foreground" registers
     u32 R_[8]; // banked registers
@@ -363,6 +364,7 @@ static void copy_state_to_cpu(struct SH4_test_state *st, struct SH4IInterpreter 
     Sh4cntx.mac.l = CP(MACL);
     Sh4cntx.mac.h = CP(MACH);
     Sh4cntx.pr = CP(PR);
+    Sh4cntx.fpul = CP(FPUL);
 #undef CP
 }
 
@@ -388,6 +390,7 @@ static void copy_state_from_cpu(struct SH4_test_state *st, struct SH4IInterprete
     CP(MACL, mac.l);
     CP(MACH, mac.h);
     CP(PR, pr);
+    CP(FPUL, fpul);
 #undef CP
 }
 
@@ -550,6 +553,7 @@ static u32 write_state(u8* where, struct SH4_test_state *state, u32 is_final)
     W32(MACH);
     W32(PR);
     W32(FPSCR);
+    W32(FPUL);
 #undef W32
     // Write size of block
     cW[M32](where, 0, r);
