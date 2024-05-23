@@ -329,8 +329,8 @@ static u32 randomize_opcode(const char* encoding_str, struct sfc32_state *rstate
 static void SH4_SR_set(struct SH4IInterpreter *sh4, u32 val)
 {
     //Sh4cntx.sr.T = val;
-    p_sh4rcb->cntx.sr.status = val;
-    p_sh4rcb->cntx.sr.T = p_sh4rcb->cntx.sr.T_h;
+    p_sh4rcb->cntx.sr.status = val & 0x700083F2;
+    p_sh4rcb->cntx.sr.T = val & 1;
     UpdateSR();
 }
 
@@ -368,7 +368,7 @@ static void copy_state_to_cpu(struct SH4_test_state *st, struct SH4IInterpreter 
 
 static void copy_state_from_cpu(struct SH4_test_state *st, struct SH4IInterpreter *sh4)
 {
-    st->SR = Sh4cntx.sr.T | Sh4cntx.sr.status;
+    st->SR = (p_sh4rcb->cntx.sr.status & 0x700083F2) | p_sh4rcb->cntx.sr.T;
     st->FPSCR = Sh4cntx.fpscr.full;
 
 #define CP(rn, rm) st-> rn = Sh4cntx. rm
