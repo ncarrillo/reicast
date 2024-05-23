@@ -218,12 +218,35 @@ struct sh4test_array {
 //=262 encodings
 static struct sh4test_array sh4tests[262];
 
+static bool str_is_displaced12(const char* str)
+{
+    if (strcmp(str, "1010dddddddddddd") == 0) return true;
+    return false;
+}
+
+static bool str_is_displaced8(const char* str)
+{
+    if (strcmp(str, "10001111dddddddd") == 0) return true;
+    // i1000_1111_iiii_iiii
+    return false;
+    //if (strcmp(str, ))
+}
+
+
 static u32 encoding_to_mask(const char* encoding_str, u32 m, u32 n, u32 d, u32 i)
 {
     struct sh4_str_ret r;
     process_SH4_instruct(&r, encoding_str);
-    if (strcmp(encoding_str, "1010dddddddddddd") == 0) {
-        if (d > 0xFFF0) d -= 0x10;
+    d &= r.d_mask;
+    m &= r.m_mask;
+    n &= r.n_mask;
+    i &= r.i_mask;
+    if (str_is_displaced12(encoding_str)) {
+        if (d > 0xFF0) d -= 0x10;
+    }
+    if (str_is_displaced8(encoding_str)) {
+        if (d > 0xF0) d -= 0x10;
+        printf("\nD: %d", d);
     }
     m = (m & r.m_mask) << r.m_shift;
     n = (n & r.n_mask) << r.n_shift;
@@ -400,9 +423,8 @@ u32 test_fetch_ins(u32 addr)
     u32 v;
     if ((num >= 0) && (num < 4)) v = test_struct.test->opcodes[num];
     else v = test_struct.test->opcodes[4];
-    //printf("\n  n: %lld v:%04x c:%d cl:%d", num, v, SH4IInterpreter::trace_cycles, SH4IInterpreter::cycles_left);
-    //fflush(stdout);
-    //fflush(stdout);
+    printf("\n  n: %lld v:%04x c:%d cl:%d", num, v, SH4IInterpreter::trace_cycles, SH4IInterpreter::cycles_left);
+    fflush(stdout);
     test_struct.ifetch_data[SH4IInterpreter::trace_cycles] = v;
     return v;
 }
