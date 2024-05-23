@@ -94,14 +94,14 @@ struct SH4_test_state {
 struct test_cycle {
     u32 actions;
 
-    i64 read_addr;
-    u64 read_val;
+    u32 read_addr;
+    u32 read_val;
 
-    i64 write_addr;
-    u64 write_val;
+    u32 write_addr;
+    u32 write_val;
 
-    i64 fetch_addr;
-    u64 fetch_val;
+    u32 fetch_addr;
+    u32 fetch_val;
 };
 
 
@@ -222,6 +222,9 @@ static u32 encoding_to_mask(const char* encoding_str, u32 m, u32 n, u32 d, u32 i
 {
     struct sh4_str_ret r;
     process_SH4_instruct(&r, encoding_str);
+    if (strcmp(encoding_str, "1010dddddddddddd") == 0) {
+        if (d > 0xFFF0) d -= 0x10;
+    }
     m = (m & r.m_mask) << r.m_shift;
     n = (n & r.n_mask) << r.n_shift;
     d = (d & r.d_mask) << r.d_shift;
@@ -390,13 +393,16 @@ static struct generating_test_struct test_struct = {};
 
 u32 test_fetch_ins(u32 addr)
 {
-    test_struct.ifetch_addr[test_struct.ifetch_num] = addr;
+    assert(SH4IInterpreter::trace_cycles < 5);
+    test_struct.ifetch_addr[SH4IInterpreter::trace_cycles] = addr;
     i64 num = ((i64)addr - (i64)test_struct.test->test_base) / 2;
     u32 v;
     if ((num >= 0) && (num < 4)) v = test_struct.test->opcodes[num];
     else v = test_struct.test->opcodes[4];
-    test_struct.ifetch_data[test_struct.ifetch_num] = v;
-    test_struct.ifetch_num++;
+    //printf("\n  n: %lld v:%04x c:%d cl:%d", num, v, SH4IInterpreter::trace_cycles, SH4IInterpreter::cycles_left);
+    //fflush(stdout);
+    //fflush(stdout);
+    test_struct.ifetch_data[SH4IInterpreter::trace_cycles] = v;
     return v;
 }
 
@@ -472,16 +478,16 @@ static u32 write_cycles(u8 *where, const struct sh4test *test)
 #define W64(v) cW[M32](where, r, (u64)(v)); r += 8
     for (u32 cycle = 0; cycle < 4; cycle++) {
         const struct test_cycle *c = &test->cycles[cycle];
-        W32(c->actions);
+        W32((u32)c->actions);
 
-        W64(c->fetch_addr);
-        W64(c->fetch_val);
+        W32((u32)c->fetch_addr);
+        W32((u32)c->fetch_val);
 
-        W64(c->write_addr);
-        W64(c->write_val);
+        W32((u32)c->write_addr);
+        W32((u32)c->write_val);
 
-        W64(c->read_addr);
-        W64(c->read_val);
+        W32((u32)c->read_addr);
+        W32((u32)c->read_val);
     }
     cW[M32](where, 0, r);
 #undef W32
@@ -596,6 +602,9 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
     ta->pr = pr;
     struct sfc32_state rstate;
     sfc32_seed(ta->fname, &rstate);
+    for (u32 i = 0; i < 20; i++) { // Prime the random generator, first few values are low-entropy
+        sfc32(&rstate);
+    }
 
     test_struct.rstate = &rstate;
     test_struct.tester = t;
@@ -614,15 +623,15 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
 
         // Make sure our CPU isn't interrupted...
         //t->cpu.interrupt_highest_priority = 0;
-        t->cpu.trace_cycles = 0;
-        t->cpu.cycles_left = 0;
+        SH4IInterpreter::trace_cycles = 0;
+        SH4IInterpreter::cycles_left = 0;
 
         // Zero our test struct
         test_struct.test = tst;
         test_struct.read_num = 0;
         test_struct.write_addr = test_struct.write_size = -1;
         test_struct.write_value = -1;
-        test_struct.write_cycle = 0;
+        test_struct.write_cycle = 50;
         test_struct.ifetch_num = 0;
         for (u32 j = 0; j < 7; j++) {
             if (j < 4) {
@@ -633,27 +642,26 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
             test_struct.read_addrs[j] = -1;
             test_struct.read_sizes[j] = -1;
             test_struct.read_values[j] = 0;
-            test_struct.read_cycles[j] = 0;
+            test_struct.read_cycles[j] = 50;
         }
 
         // Run CPU 4 cycles
         // Our amazeballs CPU can run 2-for-1 so do it special!
         // ONLY opcode 1 could have a delay slot so all should finish
         t->cpu.Loop();
-
-        // Now fill out rest of test
-        copy_state_from_cpu(&tst->final, &t->cpu);
+        assert(SH4IInterpreter::trace_cycles == 4);
+        assert(SH4IInterpreter::cycles_left == 0);
 
         for (u32 cycle = 0; cycle < 4; cycle++) {
             struct test_cycle *c = &tst->cycles[cycle];
             clear_test_cycle(c);
-            if ((test_struct.write_addr != -1) && (test_struct.write_cycle == cycle)) {
+            if (test_struct.write_cycle == cycle) {
                 c->actions |= TCA_WRITE;
                 c->write_addr = test_struct.write_addr;
                 c->write_val = test_struct.write_value;
             }
             for (u32 j = 0; j < 7; j++) {
-                if ((test_struct.read_addrs[j] != -1) && (test_struct.read_cycles[j] == cycle)) {
+                if (test_struct.read_cycles[j] == cycle) {
                     assert((c->actions & TCA_READ) == 0);
                     c->actions |= TCA_READ;
                     c->read_addr = test_struct.read_addrs[j];
@@ -663,7 +671,12 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
             c->actions |= TCA_FETCHINS;
             c->fetch_addr = test_struct.ifetch_addr[cycle];
             c->fetch_val = test_struct.ifetch_data[cycle];
+            assert(c->fetch_addr <= 0xFFFFFFFF);
+            assert(c->fetch_addr >= 0);
+            assert(c->fetch_val <= 0xFFFF);
         }
+        // Now fill out rest of test
+        copy_state_from_cpu(&tst->final, &t->cpu);
     }
     write_tests(ta);
 }

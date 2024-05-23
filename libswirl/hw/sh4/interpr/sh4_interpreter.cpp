@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <unistd.h>
 #include "license/bsd"
 #include "types.h"
 #include "../sh4_interpreter.h"
@@ -55,6 +57,7 @@ void SH4IInterpreter::Loop() {
 
         SH4IInterpreter::cycles_left--;
         SH4IInterpreter::trace_cycles++;
+        assert(SH4IInterpreter::cycles_left >= 0);
         ExecuteOpcode(op);
         //rdbg_cycle();
         l -= 1;
@@ -100,25 +103,15 @@ void ExecuteDelayslot()
         next_pc += 2;
         u32 op = IReadMem16(addr);
 
-        if (SH4IInterpreter::tracing && SH4IInterpreter::tracesLeft > 0) {
-            // Output next_pc
-            rdbg_printf("\n%08x %04x ", addr, ((u16)op & 0xFFFF));
-
-            // Output registers r0 to r15
-            for (int i = 0; i < 16; ++i) {
-                rdbg_printf("%08x ", r[i]);
-            }
-
-            rdbg_printf("%08x", sr.status | sr.T);
-            rdbg_printf(" %08x", fpscr.full);
-            SH4IInterpreter::tracesLeft--;
-        }
-
         if (op != 0)
-            rdbg_cycle();
             ExecuteOpcode(op);
             SH4IInterpreter::cycles_left--;
             SH4IInterpreter::trace_cycles++;
+            if (SH4IInterpreter::cycles_left < 0) {
+                fflush(stdout);
+                sleep(2);
+            }
+            assert(SH4IInterpreter::cycles_left>=0);
 #if !defined(NO_MMU)
     }
     catch (SH4ThrownException& ex) {

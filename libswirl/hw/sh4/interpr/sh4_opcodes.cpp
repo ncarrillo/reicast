@@ -971,6 +971,8 @@ u32 branch_target_s12(u32 op)
 sh4op(i1010_iiii_iiii_iiii)
 {
 	u32 newpc = branch_target_s12(op);//(u32) ((  ((s16)((GetImm12(op))<<4)) >>3)  + pc + 4);//(s16<<4,>>4(-1*2))
+    printf("\nEXECUTE DELAY SLOT C:%d", SH4IInterpreter::trace_cycles);
+    fflush(stdout);
 	ExecuteDelayslot();
 	next_pc=newpc;
 }
