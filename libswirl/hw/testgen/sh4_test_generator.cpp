@@ -682,13 +682,13 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
         for (u32 cycle = 0; cycle < 4; cycle++) {
             struct test_cycle *c = &tst->cycles[cycle];
             clear_test_cycle(c);
-            if (test_struct.write_cycle == cycle) {
+            if (cycle == 1) {
                 c->actions |= TCA_WRITE;
                 c->write_addr = test_struct.write_addr;
                 c->write_val = test_struct.write_value;
             }
             for (u32 j = 0; j < 7; j++) {
-                if (test_struct.read_cycles[j] == cycle) {
+                if ((test_struct.read_cycles[j] != 50) && (cycle == 1)) {
                     assert((c->actions & TCA_READ) == 0);
                     c->actions |= TCA_READ;
                     c->read_addr = test_struct.read_addrs[j];
