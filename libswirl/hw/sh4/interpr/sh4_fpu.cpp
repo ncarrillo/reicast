@@ -204,11 +204,17 @@ sh4op(i1111_nnnn_mmmm_0101)
 	{
 		u32 n = (op >> 9) & 0x07;
 		u32 m = (op >> 5) & 0x07;
+        double d = GetDR(n);
+        double dm = GetDR(m);
 
-		if (GetDR(n) > GetDR(m))
-			sr.T = 1;
-		else
-			sr.T = 0;
+		if ((n == 7) && (m == 6)) printf("\nN:%f, M:%f eval:%d data_n:%016llx data_m:%016llx", GetDR(n), GetDR(m), GetDR(n) > GetDR(m), *(u64 *)&d, *(u64 *)&dm);
+
+        if (GetDR(n) > GetDR(m)) {
+            sr.T = 1;
+        }
+		else {
+            sr.T = 0;
+        }
 	}
 }
 //All memory opcodes are here

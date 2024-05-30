@@ -96,10 +96,10 @@ struct test_cycle {
     u32 actions;
 
     u32 read_addr;
-    u32 read_val;
+    u64 read_val;
 
     u32 write_addr;
-    u32 write_val;
+    u64 write_val;
 
     u32 fetch_addr;
     u32 fetch_val;
@@ -247,7 +247,6 @@ static u32 encoding_to_mask(const char* encoding_str, u32 m, u32 n, u32 d, u32 i
     }
     if (str_is_displaced8(encoding_str)) {
         if (d > 0xF0) d -= 0x10;
-        printf("\nD: %d", d);
     }
     m = (m & r.m_mask) << r.m_shift;
     n = (n & r.n_mask) << r.n_shift;
@@ -351,8 +350,8 @@ static void copy_state_to_cpu(struct SH4_test_state *st, struct SH4IInterpreter 
     for (u32 i = 0; i < 16; i++) {
         Sh4cntx.r[i] = st->R[i];
         if (i < 8) Sh4cntx.r_bank[i] = st->R_[i];
-        Sh4cntx.xffr[i] = st->fb[0].FP32[i];
-        Sh4cntx.xffr[i+16] = st->fb[1].FP32[i];
+        Sh4cntx.xffr[i+16] = st->fb[0].FP32[i];
+        Sh4cntx.xffr[i] = st->fb[1].FP32[i];
     }
     Sh4cntx.pc = CP(PC);
     Sh4cntx.gbr = CP(GBR);
@@ -377,8 +376,8 @@ static void copy_state_from_cpu(struct SH4_test_state *st, struct SH4IInterprete
     for (u32 i = 0; i < 16; i++) {
         st->R[i] = Sh4cntx.r[i];
         if (i < 8) st->R_[i] = Sh4cntx.r_bank[i];
-        st->fb[0].FP32[i] = Sh4cntx.xffr[i];
-        st->fb[1].FP32[i] = Sh4cntx.xffr[i+16];
+        st->fb[0].FP32[i] = Sh4cntx.xffr[i+16];
+        st->fb[1].FP32[i] = Sh4cntx.xffr[i];
     }
     CP(PC, pc);
     CP(GBR, gbr);
@@ -426,8 +425,8 @@ u32 test_fetch_ins(u32 addr)
     u32 v;
     if ((num >= 0) && (num < 4)) v = test_struct.test->opcodes[num];
     else v = test_struct.test->opcodes[4];
-    printf("\n  n: %lld v:%04x c:%d cl:%d", num, v, SH4IInterpreter::trace_cycles, SH4IInterpreter::cycles_left);
-    fflush(stdout);
+    //printf("\n  n: %lld v:%04x c:%d cl:%d", num, v, SH4IInterpreter::trace_cycles, SH4IInterpreter::cycles_left);
+    //fflush(stdout);
     test_struct.ifetch_data[SH4IInterpreter::trace_cycles] = v;
     return v;
 }
@@ -501,7 +500,7 @@ static u32 write_cycles(u8 *where, const struct sh4test *test)
     cW[M32](where, 8, 4);
     u32 r = 12;
 #define W32(v) cW[M32](where, r, v); r += 4
-#define W64(v) cW[M32](where, r, (u64)(v)); r += 8
+#define W64(v) cW[M64](where, r, (u64)(v)); r += 8
     for (u32 cycle = 0; cycle < 4; cycle++) {
         const struct test_cycle *c = &test->cycles[cycle];
         W32((u32)c->actions);
@@ -510,10 +509,10 @@ static u32 write_cycles(u8 *where, const struct sh4test *test)
         W32((u32)c->fetch_val);
 
         W32((u32)c->write_addr);
-        W32((u32)c->write_val);
+        W64(c->write_val);
 
         W32((u32)c->read_addr);
-        W32((u32)c->read_val);
+        W64(c->read_val);
     }
     cW[M32](where, 0, r);
 #undef W32
@@ -584,7 +583,6 @@ static void write_tests(struct sh4test_array *ta)
     sprintf(rp, "sh4_json/%s", ta->fname);
     construct_path(fpath, rp);
     remove(fpath);
-    printf("\nWRITE %s", fpath);
 
     FILE *f = fopen(fpath, "wb");
 
@@ -682,7 +680,7 @@ static void generate_test_struct(const char* encoding_str, const char* mnemonic,
         for (u32 cycle = 0; cycle < 4; cycle++) {
             struct test_cycle *c = &tst->cycles[cycle];
             clear_test_cycle(c);
-            if (cycle == 1) {
+            if ((cycle == 1)  && (test_struct.write_cycle != 50)) {
                 c->actions |= TCA_WRITE;
                 c->write_addr = test_struct.write_addr;
                 c->write_val = test_struct.write_value;
